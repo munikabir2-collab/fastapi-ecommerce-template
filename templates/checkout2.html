@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checkout</title>
+</head>
+<body>
+    <h2>Checkout</h2>
+
+    <p><b>Total Amount:</b> ₹{{ total }}</p>
+
+    <form method="post" action="/place-order">
+        <label>Payment Method:</label><br><br>
+        <input type="radio" name="payment_method" value="COD" required> Cash on Delivery<br>
+        <input type="radio" name="payment_method" value="Online"> Online Payment<br><br>
+
+        <button type="submit">Confirm Order</button>
+    </form>
+</body>
+</html>

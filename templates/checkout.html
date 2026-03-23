@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Online Payment Checkout</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+        .container {
+            width: 50%;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 6px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #eee;
+        }
+        .total {
+            text-align: right;
+            font-size: 18px;
+            margin-top: 15px;
+        }
+        .btn {
+            margin-top: 20px;
+            padding: 12px;
+            width: 100%;
+            background: #3399cc;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+        .btn:hover {
+            background: #2a80a8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Checkout</h2>
+
+    {% if cart_items %}
+    <table>
+        <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Subtotal</th>
+        </tr>
+
+        {% for item in cart_items %}
+        <tr>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>₹ {{ item.product.price }}</td>
+            <td>₹ {{ item.product.price * item.quantity }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="total">
+        <strong>Total: ₹ {{ total }}</strong>
+    </div>
+
+    <button class="btn" onclick="payNow()">Pay Online</button>
+
+    {% else %}
+        <p>Your cart is empty.</p>
+    {% endif %}
+</div>
+
+<script>
+function payNow() {
+    var options = {
+        "key": "RAZORPAY_TEST_KEY",   // 🔴 replace with real key
+        "amount": "{{ total * 100 }}", // amount in paise
+        "currency": "INR",
+        "name": "My Shop",
+        "description": "Order Payment",
+        "handler": function (response){
+            window.location.href = "/payment-success";
+        },
+        "theme": {
+            "color": "#3399cc"
+        }
+    };
+    var rzp1 = new Razorpay(options);
+    rzp1.open();
+}
+</script>
+
+</body>
+</html>

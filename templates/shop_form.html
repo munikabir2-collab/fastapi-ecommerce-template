@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Shop Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+        }
+        .container {
+            width: 400px;
+            margin: 60px auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Add Shop Details</h2>
+
+    <form method="post" action="/shop/add">
+
+        <label for="shop_name">Shop Name</label>
+        <input type="text" name="shop_name" id="shop_name"
+               value="{{ seller.shop_name if seller else '' }}" required>
+
+        <label for="shop_location">Shop Location</label>
+        <input type="text" name="shop_location" id="shop_location"
+               value="{{ seller.shop_location if seller else '' }}" required>
+
+        <label for="shop_description">Shop Description</label>
+        <textarea name="shop_description" id="shop_description" rows="4">{{ seller.shop_description if seller else '' }}</textarea>
+         
+        <button type="submit">Save Shop</button>
+    </form>
+</div>
+
+</body>
+</html>

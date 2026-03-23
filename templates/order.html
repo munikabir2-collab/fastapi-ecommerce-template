@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Place Order</title>
+    <style>
+        body{
+            font-family: Arial;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 60%;
+        }
+
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align:center;
+        }
+
+        th {
+            background-color: #eee;
+        }
+
+        .total{
+            margin-top:20px;
+            font-size:20px;
+            font-weight:bold;
+        }
+
+        button{
+            padding:10px 20px;
+            font-size:16px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Order Summary</h1>
+
+{% if cart_items %}
+
+<table>
+<tr>
+<th>Product</th>
+<th>Price</th>
+<th>Qty</th>
+<th>Total</th>
+</tr>
+
+{% for item in cart_items %}
+<tr>
+<td>{{ item.product.name }}</td>
+<td>₹{{ item.product.price }}</td>
+<td>{{ item.quantity }}</td>
+<td>₹{{ item.product.price * item.quantity }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+<div class="total">
+Total Amount: ₹{{ total }}
+</div>
+
+<hr>
+
+<h2>Payment Method</h2>
+
+<form method="post" action="/order/place-order">
+
+<label>
+<input type="radio" name="payment_method" value="COD" required>
+Cash on Delivery
+</label>
+
+<br><br>
+
+<label>
+<input type="radio" name="payment_method" value="ONLINE">
+Online Payment
+</label>
+
+<br><br>
+
+<button type="submit">Confirm Order</button>
+
+</form>
+
+{% else %}
+
+<p>Your cart is empty.</p>
+<a href="/products">Go to Products</a>
+
+{% endif %}
+
+</body>
+</html>

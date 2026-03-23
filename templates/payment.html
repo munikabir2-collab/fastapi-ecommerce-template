@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Payment</title>
+    <meta charset="UTF-8">
+
+    <!-- Razorpay -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+
+<body>
+
+<div class="container mt-5">
+    <div class="card shadow text-center">
+
+        <div class="card-header bg-dark text-white">
+            <h4>Online Payment</h4>
+        </div>
+
+        <div class="card-body">
+
+            <h5>Order ID: {{ order.id }}</h5>
+
+            <h3 class="text-success mb-4">
+                Pay ₹{{ order.total }}
+            </h3>
+
+            <!-- ✅ Pay Button -->
+            <button id="payBtn" class="btn btn-success btn-lg">
+                Pay with UPI / Card
+            </button>
+
+            <!-- ✅ QR Code -->
+            <div class="mt-4">
+                <h5>Scan & Pay</h5>
+                <img src="/payment/generate-qr/{{ order.id }}" width="200">
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Form -->
+<form id="paymentForm" action="/payment/verify" method="POST">
+    <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
+    <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+    <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+</form>
+
+<script>
+document.getElementById("payBtn").onclick = function(e){
+
+    var options = {
+        "key": "{{ razorpay_key }}",
+        "amount": "{{ (order.total * 100) | int }}",
+        "currency": "INR",
+        "order_id": "{{ razorpay_order_id }}",
+
+        "name": "My Shop",
+        "description": "Order Payment",
+
+        "prefill": {
+            "name": "Customer",
+            "email": "test@email.com",
+            "contact": "9999999999"
+        },
+
+        // ✅ UPI Support
+        "upi": {
+            "flow": "collect"
+        },
+
+        // ✅ Show UPI First
+        "config": {
+            "display": {
+                "blocks": {
+                    "upi": {
+                        "name": "Pay using UPI",
+                        "instruments": [
+                            {
+                                "method": "upi",
+                                "flows": ["collect", "intent"]
+                            }
+                        ]
+                    },
+                    "cards": {
+                        "name": "Cards",
+                        "instruments": [{ "method": "card" }]
+                    },
+                    "netbanking": {
+                        "name": "Net Banking",
+                        "instruments": [{ "method": "netbanking" }]
+                    }
+                },
+                "sequence": ["block.upi", "block.cards", "block.netbanking"],
+                "preferences": {
+                    "show_default_blocks": false
+                }
+            }
+        },
+
+        // ✅ Success
+        "handler": function (response){
+            document.getElementById("razorpay_order_id").value = response.razorpay_order_id;
+            document.getElementById("razorpay_payment_id").value = response.razorpay_payment_id;
+            document.getElementById("razorpay_signature").value = response.razorpay_signature;
+
+            document.getElementById("paymentForm").submit();
+        }
+    };
+
+    var rzp = new Razorpay(options);
+
+    rzp.on('payment.failed', function (response){
+        alert("Payment Failed ❌");
+        console.log(response.error);
+    });
+
+    rzp.open();
+    e.preventDefault();
+};
+</script>
+
+</body>
+</html>

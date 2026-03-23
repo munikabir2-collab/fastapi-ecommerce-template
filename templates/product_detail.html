@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ product.name }} - Product Details</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .product-container {
+            max-width: 600px;
+            margin: auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        h1 { color: #333; }
+        p { font-size: 16px; line-height: 1.5; }
+        .price { font-weight: bold; color: green; font-size: 18px; }
+        .back { margin-top: 20px; display: inline-block; text-decoration: none; color: #007BFF; }
+    </style>
+</head>
+<body>
+<div class="product-container">
+    <h1>{{ product.name }}</h1>
+    <p>{{ product.description }}</p>
+    <p class="price">Price: ₹{{ product.price }}</p>
+    <p>Available Quantity: {{ product.quantity }}</p>
+
+    <a href="/products" class="back">← Back to Products</a>
+</div>
+</body>
+</html>

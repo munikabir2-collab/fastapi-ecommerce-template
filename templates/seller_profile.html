@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seller Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <div class="row">
+
+        <!-- 🏪 Seller Info -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    {% if seller %}
+                        <h4 class="mb-1">🏪 {{ seller.username }}</h4>
+                        <p class="text-muted mb-2">{{ seller.email }}</p>
+                        <span class="badge bg-success">Seller</span>
+                    {% else %}
+                        <h4 class="mb-1">🏪 Seller</h4>
+                        <p class="text-muted mb-2">Profile not available</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 📊 Sales Summary -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">📊 Sales</h6>
+                    <p class="mb-1">Total Orders: <strong>{{ stats.total_orders if stats else 0 }}</strong></p>
+                    <p class="mb-0">Total Revenue: <strong>₹ {{ stats.total_revenue if stats else 0 }}</strong></p>
+                </div>
+            </div>
+
+            <!-- 🔔 Notifications -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">🔔 Notifications</h6>
+                    <ul id="notifications-panel" class="list-group">
+                        {% for n in notifications %}
+                            <li class="list-group-item">
+                                <strong>{{ n.title }}</strong>: {{ n.message }}
+                            </li>
+                        {% else %}
+                            <li class="list-group-item text-muted">No notifications</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📦 Products & Subscription -->
+        <div class="col-md-8">
+
+            <!-- 📦 My Products -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-white fw-bold">📦 My Products</div>
+                <div class="card-body">
+                    {% if products %}
+                        <ul class="list-group">
+                            {% for p in products %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ p.name }}</strong><br>
+                                        <small class="text-muted">₹ {{ p.price }}</small>
+                                    </div>
+                                    <form method="post" action="/seller/product/{{ p.id }}/stock" class="d-flex align-items-center gap-2">
+                                        <input type="number" name="stock" value="{{ p.stock }}" min="0" class="form-control form-control-sm" style="width: 80px;">
+                                        <button type="submit" class="btn btn-sm btn-success">Update</button>
+                                    </form>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">No products added yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 📦 Subscription -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="fw-bold">📦 Subscription</h5>
+                    {% if subscription %}
+                        <p class="mb-1">Plan: <strong>{{ subscription.plan }}</strong></p>
+                        <p class="mb-0">Valid till: 
+                            {% if subscription.expires_at %}
+                                {{ subscription.expires_at.strftime("%d %b %Y") }}
+                            {% else %}
+                                Unlimited
+                            {% endif %}
+                        </p>
+                    {% else %}
+                        <p class="text-muted mb-0">No active subscription</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 🏪 Shop Info -->
+            {% if profile %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5>{{ profile.shop_name }}</h5>
+                        <p>{{ profile.shop_description }}</p>
+                        <a href="/seller/profile/edit" class="btn btn-primary btn-sm">Edit Profile</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5>Create Your Shop</h5>
+                        <form method="post" action="/seller/profile/create">
+                            <input type="text" name="shop_name" placeholder="Shop Name" required class="form-control mb-2">
+                            <textarea name="shop_description" placeholder="About your shop" class="form-control mb-2"></textarea>
+                            <button type="submit" class="btn btn-success btn-sm">Create Profile</button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- 💳 Payout Button -->
+            <form method="post" action="/seller/payment/payout">
+                <button class="btn btn-success btn-sm mb-2">Payout</button>
+            </form>
+
+            <!-- 💳 Bank Account Form -->
+            <form method="post" action="/seller/payment/bank" class="mb-4">
+                <input name="name" placeholder="Account Holder Name" required class="form-control mb-2">
+                <input name="account_number" placeholder="Account Number" required class="form-control mb-2">
+                <input name="ifsc" placeholder="IFSC" required class="form-control mb-2">
+                <button type="submit" class="btn btn-primary btn-sm">Save Bank</button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<audio id="notif-sound" preload="auto">
+    <source src="/static/sounds/notification.mp3" type="audio/mpeg">
+</audio>
+
+{% if seller %}
+<script>
+const sellerId = "{{ seller.id }}";
+const socket = new WebSocket(`ws://127.0.0.1:8000/seller/ws/notifications?seller_id=${sellerId}`);
+let count = 0;
+
+socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    const sound = document.getElementById("notif-sound");
+    if(sound){ sound.currentTime = 0; sound.play().catch(e=>console.log(e)); }
+
+    count++;
+    const badge = document.getElementById("notif-count");
+    if(badge){ badge.style.display="inline"; badge.innerText=count; }
+
+    const panel = document.getElementById("notifications-panel");
+    if(panel){
+        const li = document.createElement("li");
+        li.classList.add("list-group-item","fw-bold");
+        li.innerHTML = `<strong>${data.title}</strong>: ${data.message}`;
+        panel.prepend(li);
+    }
+
+    showToast(data.title + " - " + data.message);
+};
+
+function showToast(text){
+    const toast = document.createElement("div");
+    toast.innerText = text;
+    toast.style.position = "fixed";
+    toast.style.bottom = "20px";
+    toast.style.right = "20px";
+    toast.style.background = "#333";
+    toast.style.color = "#fff";
+    toast.style.padding = "10px";
+    toast.style.borderRadius = "6px";
+    document.body.appendChild(toast);
+    setTimeout(()=>toast.remove(), 3000);
+}
+</script>
+{% endif %}
+
+</body>
+</html>

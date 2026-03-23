@@ -1,0 +1,36 @@
+from fastapi import APIRouter, Request, Depends
+from sqlalchemy.orm import Session
+from fastapi.templating import Jinja2Templates
+from database import SessionLocal
+import models
+
+router = APIRouter(
+    prefix="/plans",
+    tags=["Plans"]
+)
+
+templates = Jinja2Templates(directory="templates")
+
+
+def fast_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@router.get("/")
+def plan_list(request: Request, db: Session = Depends(fast_db)):
+
+   plans = db.query(models.Plan).all()
+
+if not plans:
+    return templates.TemplateResponse(
+        "plans.html",
+        {
+            "request": request,
+            "plans": [],
+            "message": "No plans available"
+        }
+    )
