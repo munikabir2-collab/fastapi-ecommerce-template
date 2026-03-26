@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from database import engine, Base
 from auth import router as auth_router
 import os
+from fastapi.responses import HTMLResponse
 from routers import (
     cart,
     products,
@@ -66,6 +67,6 @@ app.mount(
 # -----------------------
 # HOME
 # -----------------------
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse("login.html", {"request": request})    
