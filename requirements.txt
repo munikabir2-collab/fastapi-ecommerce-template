@@ -2,3 +2,5 @@ fastapi
 uvicorn[standard]
 jinja2
 itsdangerous
+sqlalchemy
+psycopg2-binary
