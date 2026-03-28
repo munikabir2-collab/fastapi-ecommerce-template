@@ -9,3 +9,4 @@ python-multipart
 reportlab
 httpx
 razorpay
+qrcode[pil]
