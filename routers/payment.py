@@ -46,8 +46,9 @@ def payment_page(order_id: int, request: Request, db: Session = Depends(fast_db)
 
     client = get_client()
 
+    # Razorpay order creation
     razorpay_order = client.order.create({
-        "amount": int(float(order.total) * 100),
+        "amount": int(float(order.total) * 100),  # amount in paise
         "currency": "INR",
         "payment_capture": 1
     })
@@ -55,16 +56,22 @@ def payment_page(order_id: int, request: Request, db: Session = Depends(fast_db)
     order.razorpay_order_id = razorpay_order["id"]
     db.commit()
 
-    return templates.TemplateResponse(
-        "payment.html",
-        {
-            "request": request,
-            "order": order,
-            "razorpay_key": os.getenv("RAZORPAY_KEY"),
-            "razorpay_order_id": razorpay_order["id"]
-        }
-    )
+    # Prepare sanitized order data for template
+    order_data = {
+    "id": order.id,
+    "total": float(order.total),  # convert Decimal to float
+    "status": order.status,
+    "razorpay_order_id": order.razorpay_order_id
+}
 
+return templates.TemplateResponse(
+    "payment.html",
+    {
+        "request": request,
+        "order": order_data,
+        "razorpay_key": os.getenv("RAZORPAY_KEY")
+    }
+)
 
 # ---------------------------
 # UPI QR CODE

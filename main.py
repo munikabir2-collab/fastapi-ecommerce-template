@@ -69,9 +69,32 @@ print("CHECK DB:", os.getenv("DATABASE_URL"))
 # HOME
 # -----------------------
 @app.get("/", response_class=HTMLResponse)
-def home(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})    
+def home(request: Request, db: Session = Depends(fast_db)):
 
+    # Example: fetch first user (adjust as needed)
+    user = db.query(models.User).first()
+
+    if not user:
+        # If no user, just render login
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request}
+        )
+
+    # ✅ Convert SQLAlchemy object to simple dict
+    user_data = {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email
+    }
+
+    return templates.TemplateResponse(
+        "login.html",
+        {
+            "request": request,
+            "user": user_data
+        }
+    )
 
 if __name__ == "__main__":
     import uvicorn
