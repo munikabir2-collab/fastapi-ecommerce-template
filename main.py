@@ -64,6 +64,7 @@ app.mount(
     name="static"
 )
 
+print("CHECK DB:", os.getenv("DATABASE_URL"))
 # -----------------------
 # HOME
 # -----------------------
