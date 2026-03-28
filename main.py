@@ -50,7 +50,7 @@ app.include_router(webhook.router)
 app.include_router(seller_profile.router)
 app.include_router(user_profile.router)
 app.include_router(subscription.router)
-app.include_router(payment.router, prefix="/seller")
+
 # -----------------------
 # STATIC
 # -----------------------
@@ -71,3 +71,9 @@ print("CHECK DB:", os.getenv("DATABASE_URL"))
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})    
+
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)    
