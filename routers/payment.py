@@ -55,15 +55,15 @@ def payment_page(order_id: int, request: Request, db: Session = Depends(fast_db)
     order.razorpay_order_id = razorpay_order["id"]
     db.commit()
 
-    return templates.TemplateResponse(
-        "payment.html",
-        {
-            "request": request,
-            "order": order,
-            "razorpay_key": os.getenv("RAZORPAY_KEY"),
-            "razorpay_order_id": razorpay_order["id"]
-        }
-    )
+   return templates.TemplateResponse(
+    name="payment.html",
+    context={
+        "request": request,
+        "order": order,
+        "razorpay_key": os.getenv("RAZORPAY_KEY"),
+        "razorpay_order_id": razorpay_order["id"]
+    }
+)
 
 
 # ---------------------------
