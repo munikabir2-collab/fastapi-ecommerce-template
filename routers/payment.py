@@ -41,12 +41,15 @@ def get_client():
 def payment_page(order_id: int, request: Request, db: Session = Depends(fast_db)):
 
     order = db.query(models.Order).filter(models.Order.id == order_id).first()
+
     if not order:
         return {"error": "Order not found"}
 
     client = get_client()
+
+    # Razorpay order creation
     razorpay_order = client.order.create({
-        "amount": int(float(order.total) * 100),  # paise me
+        "amount": int(float(order.total) * 100),  # amount in paise
         "currency": "INR",
         "payment_capture": 1
     })
@@ -54,6 +57,7 @@ def payment_page(order_id: int, request: Request, db: Session = Depends(fast_db)
     order.razorpay_order_id = razorpay_order["id"]
     db.commit()
 
+    # ✅ return inside the function
     return templates.TemplateResponse(
         "payment.html",
         {
@@ -63,7 +67,6 @@ def payment_page(order_id: int, request: Request, db: Session = Depends(fast_db)
             "razorpay_order_id": razorpay_order["id"]
         }
     )
-
 
 # ---------------------------
 # UPI QR CODE
