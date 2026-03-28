@@ -8,7 +8,7 @@ import models
 import os
 import qrcode
 import uuid
-
+from fastapi.encoders import jsonable_encoder
 router = APIRouter(prefix="/payment", tags=["Payment"])
 templates = Jinja2Templates(directory="templates")
 
@@ -68,8 +68,9 @@ return templates.TemplateResponse(
     "payment.html",
     {
         "request": request,
-        "order": order_data,
-        "razorpay_key": os.getenv("RAZORPAY_KEY")
+        "order": jsonable_encoder(order),  # 🔹 SQLAlchemy object ko safe dict me convert kar diya
+        "razorpay_key": os.getenv("RAZORPAY_KEY"),
+        "razorpay_order_id": razorpay_order["id"]
     }
 )
 
