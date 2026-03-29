@@ -112,7 +112,7 @@ class OrderItem(Base):
     # snapshot
     product_name = Column(String)
     is_paid_to_seller = Column(Boolean, default=False)
-   
+     
     
 
 

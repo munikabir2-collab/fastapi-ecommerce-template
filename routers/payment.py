@@ -8,7 +8,7 @@ import models
 import os
 import qrcode
 import uuid
-from fastapi.encoders import jsonable_encoder
+
 
 router = APIRouter(prefix="/payment", tags=["Payment"])
 templates = Jinja2Templates(directory="templates")
@@ -57,17 +57,23 @@ def payment_page(order_id: int, request: Request, db: Session = Depends(fast_db)
     order.razorpay_order_id = razorpay_order["id"]
     db.commit()
 
-    # ✅ return inside the function
+    # Prepare sanitized order data for template
+    order_data = {
+        "id": order.id,
+        "total": float(order.total),  # convert Decimal to float
+        "status": order.status,
+        "razorpay_order_id": order.razorpay_order_id
+    }
+
     return templates.TemplateResponse(
         "payment.html",
         {
             "request": request,
-            "order": jsonable_encoder(order),  # SQLAlchemy object ko dict me convert
+            "order": order_data,  # ✅ dict with 'total'
             "razorpay_key": os.getenv("RAZORPAY_KEY"),
             "razorpay_order_id": razorpay_order["id"]
         }
     )
-
 # ---------------------------
 # UPI QR CODE
 # ---------------------------

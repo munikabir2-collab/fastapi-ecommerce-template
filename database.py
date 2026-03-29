@@ -1,28 +1,32 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from dotenv import load_dotenv
 
-# get database URL from environment
+# Load environment variables from .env
+load_dotenv()
+
+# Get database URL
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# safety check
+# Safety check
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL is not set in environment variables")
 
-# fix postgres:// issue (Render compatibility)
+# Fix for Render compatibility if using old postgres:// URL
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
 
-# create engine
+# Create SQLAlchemy engine
 engine = create_engine(DATABASE_URL)
 
-# session setup
+# Create session maker
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# base model
+# Base class for models
 Base = declarative_base()
 
-# dependency function (standard FastAPI way)
+# Dependency function for FastAPI
 def get_db():
     db = SessionLocal()
     try:
@@ -30,5 +34,5 @@ def get_db():
     finally:
         db.close()
 
-# ✅ alias for old code compatibility
+# Alias for old code compatibility
 fast_db = get_db

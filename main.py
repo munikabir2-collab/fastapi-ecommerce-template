@@ -1,13 +1,15 @@
 # main.py
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
+import models
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
-from database import engine, Base
+from database import engine, Base, fast_db, get_db
 from auth import router as auth_router
 import os
 from fastapi.responses import HTMLResponse
+from sqlalchemy.orm import Session
 from routers import (
     cart,
     products,
@@ -69,19 +71,16 @@ print("CHECK DB:", os.getenv("DATABASE_URL"))
 # HOME
 # -----------------------
 @app.get("/", response_class=HTMLResponse)
-def home(request: Request, db: Session = Depends(fast_db)):
+def home(request: Request, db: Session = Depends(get_db)):  # use get_db, not fast_db
 
-    # Example: fetch first user (adjust as needed)
     user = db.query(models.User).first()
 
     if not user:
-        # If no user, just render login
         return templates.TemplateResponse(
             "login.html",
             {"request": request}
         )
 
-    # ✅ Convert SQLAlchemy object to simple dict
     user_data = {
         "id": user.id,
         "name": user.name,
