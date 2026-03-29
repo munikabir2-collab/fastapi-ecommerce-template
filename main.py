@@ -91,7 +91,7 @@ def home(request: Request, db: Session = Depends(get_db)):  # use get_db, not fa
         "login.html",
         {
             "request": request,
-            "user": user_data
+            
         }
     )
 
