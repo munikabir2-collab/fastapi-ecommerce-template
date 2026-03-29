@@ -1,15 +1,17 @@
-# main.py
 from fastapi import FastAPI, Request, Depends
-import models
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.sessions import SessionMiddleware
-from dotenv import load_dotenv
-from database import engine, Base, fast_db, get_db
-from auth import router as auth_router
-import os
 from fastapi.responses import HTMLResponse
+from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
+from dotenv import load_dotenv
+import os
+
+import models
+from database import get_db   # ✅ only needed import
+from auth import router as auth_router
+
+# Routers
 from routers import (
     cart,
     products,
@@ -22,7 +24,12 @@ from routers import (
     user_profile,
     subscription
 )
-load_dotenv(override=True)
+
+# -----------------------
+# LOAD ENV
+# -----------------------
+load_dotenv()
+
 # -----------------------
 # APP SETUP
 # -----------------------
@@ -33,21 +40,32 @@ app.add_middleware(
     secret_key="supersecretkey"
 )
 
-Base.metadata.create_all(bind=engine)
+# ❌ REMOVE THIS (causes crash on Render)
+# from database import engine, Base
+# Base.metadata.create_all(bind=engine)
 
-#templates = Jinja2Templates(directory="templates")
+# -----------------------
+# TEMPLATE SETUP
+# -----------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 templates = Jinja2Templates(
     directory=os.path.join(BASE_DIR, "templates")
 )
 
-
+# -----------------------
+# STATIC FILES
+# -----------------------
+app.mount(
+    "/static",
+    StaticFiles(directory=os.path.join(BASE_DIR, "static")),
+    name="static"
+)
 
 # -----------------------
 # ROUTERS
 # -----------------------
-app.include_router(auth_router)   # 🔐 AUTH ROUTES
+app.include_router(auth_router)
 
 app.include_router(products.router)
 app.include_router(cart.router)
@@ -61,24 +79,10 @@ app.include_router(user_profile.router)
 app.include_router(subscription.router)
 
 # -----------------------
-# STATIC
-# -----------------------
-
-# ✅ Absolute path (VERY IMPORTANT)
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-app.mount(
-    "/static",
-    StaticFiles(directory=os.path.join(BASE_DIR, "static")),
-    name="static"
-)
-
-print("CHECK DB:", os.getenv("DATABASE_URL"))
-# -----------------------
-# HOME
+# HOME ROUTE
 # -----------------------
 @app.get("/", response_class=HTMLResponse)
-def home(request: Request, db: Session = Depends(get_db)):  # use get_db, not fast_db
+def home(request: Request, db: Session = Depends(get_db)):
 
     user = db.query(models.User).first()
 
@@ -88,21 +92,22 @@ def home(request: Request, db: Session = Depends(get_db)):  # use get_db, not fa
             {"request": request}
         )
 
-    user_data = {
-        "id": user.id,
-        "name": user.name,
-        "email": user.email
-    }
-
     return templates.TemplateResponse(
         "login.html",
         {
-            "request": request
-            
+            "request": request,
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email
+            }
         }
     )
 
+# -----------------------
+# RUN LOCAL
+# -----------------------
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)    
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
