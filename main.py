@@ -42,7 +42,7 @@ templates = Jinja2Templates(
     directory=os.path.join(BASE_DIR, "templates")
 )
 
-templates.env.cache = {}   # 🔥 IMPORTANT FIX
+
 
 # -----------------------
 # ROUTERS
