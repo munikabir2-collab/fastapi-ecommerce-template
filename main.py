@@ -35,8 +35,15 @@ app.add_middleware(
 
 Base.metadata.create_all(bind=engine)
 
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+templates = Jinja2Templates(
+    directory=os.path.join(BASE_DIR, "templates")
+)
+
+templates.env.cache = {}   # 🔥 IMPORTANT FIX
+templates.env.auto_reload = True   # ✅ add this
 # -----------------------
 # ROUTERS
 # -----------------------
@@ -90,7 +97,7 @@ def home(request: Request, db: Session = Depends(get_db)):  # use get_db, not fa
     return templates.TemplateResponse(
         "login.html",
         {
-            "request": request,
+            "request": request
             
         }
     )
