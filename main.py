@@ -41,8 +41,8 @@ app.add_middleware(
 )
 
 # ❌ REMOVE THIS (causes crash on Render)
-# from database import engine, Base
-# Base.metadata.create_all(bind=engine)
+#from database import engine, Base
+#Base.metadata.create_all(bind=engine)
 
 # -----------------------
 # TEMPLATE SETUP
