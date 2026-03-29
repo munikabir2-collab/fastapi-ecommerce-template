@@ -43,7 +43,7 @@ templates = Jinja2Templates(
 )
 
 templates.env.cache = {}   # 🔥 IMPORTANT FIX
-templates.env.auto_reload = True   # ✅ add this
+
 # -----------------------
 # ROUTERS
 # -----------------------
