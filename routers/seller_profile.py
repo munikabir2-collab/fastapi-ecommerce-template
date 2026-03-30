@@ -21,7 +21,7 @@ router = APIRouter(
     tags=["Seller"]
 )
 
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 
 # 🔐 Only seller access

@@ -16,7 +16,7 @@ router = APIRouter(
     tags=["Products"]
 )
 
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 
 # ---------------------------

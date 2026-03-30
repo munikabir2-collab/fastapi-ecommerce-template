@@ -9,7 +9,7 @@ from models import Cart, Product, Order, OrderItem
 from routers.seller import send_notification
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 # ---------------------------
 # Auth

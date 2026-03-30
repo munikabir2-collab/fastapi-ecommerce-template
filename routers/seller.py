@@ -51,7 +51,7 @@ pwd_context = CryptContext(
 # ---------------------------
 router = APIRouter(prefix="/seller", tags=["seller"])
 
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 # ---------------------------
 # DB dependency

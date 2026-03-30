@@ -7,7 +7,7 @@ from database import fast_db
 from models import User, Order, Cart
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 
 def get_current_user(request: Request):

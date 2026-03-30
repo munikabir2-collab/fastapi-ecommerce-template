@@ -9,7 +9,7 @@ from utils.webhooks import send_order_webhook
 import asyncio
 
 router = APIRouter(prefix="/order", tags=["Order"])
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 
 # ---------------------------

@@ -13,7 +13,7 @@ router = APIRouter(
     tags=["Shop"]
 )
 
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 # ---------------------------
 # DB Dependency

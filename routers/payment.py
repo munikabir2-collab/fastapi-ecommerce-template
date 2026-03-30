@@ -11,7 +11,7 @@ import uuid
 
 
 router = APIRouter(prefix="/payment", tags=["Payment"])
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 
 # ---------------------------

@@ -8,7 +8,7 @@ from database import SessionLocal
 from models import User
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 

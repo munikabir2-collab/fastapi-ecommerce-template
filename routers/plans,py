@@ -9,7 +9,7 @@ router = APIRouter(
     tags=["Plans"]
 )
 
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 
 def fast_db():
