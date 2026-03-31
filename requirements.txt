@@ -10,3 +10,4 @@ reportlab
 httpx
 razorpay
 qrcode[pil]
+jinja2==3.1.3
