@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
@@ -8,7 +7,6 @@ from database import SessionLocal
 from models import User
 
 router = APIRouter()
-#templates = Jinja2Templates(directory="templates")
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
@@ -30,6 +28,7 @@ def fast_db():
 def hash_password(password: str):
     return pwd_context.hash(password)
 
+
 def verify_password(password, hashed):
     return pwd_context.verify(password, hashed)
 
@@ -39,7 +38,10 @@ def verify_password(password, hashed):
 # -----------------------
 @router.get("/register")
 def register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return request.app.state.templates.TemplateResponse(
+        "register.html",
+        {"request": request}
+    )
 
 
 @router.post("/register")
@@ -60,7 +62,7 @@ def register_user(
     ).first()
 
     if existing_user:
-        return templates.TemplateResponse(
+        return request.app.state.templates.TemplateResponse(
             "register.html",
             {"request": request, "error": "User already exists"}
         )
@@ -87,7 +89,10 @@ def register_user(
 # -----------------------
 @router.get("/login")
 def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return request.app.state.templates.TemplateResponse(
+        "login.html",
+        {"request": request}
+    )
 
 
 @router.post("/login")
@@ -100,7 +105,7 @@ def login_user(
     user = db.query(User).filter(User.username == username).first()
 
     if not user or not verify_password(password, user.password):
-        return templates.TemplateResponse(
+        return request.app.state.templates.TemplateResponse(
             "login.html",
             {"request": request, "error": "Invalid credentials"}
         )

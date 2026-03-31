@@ -90,7 +90,7 @@ def home(request: Request, db: Session = Depends(get_db)):
 
     if not user:
         return HTMLResponse("""
-            <h2>Login</h2>
+            <h2>Login Required</h2>
             <a href="/login">Go to Login</a>
         """)
 
