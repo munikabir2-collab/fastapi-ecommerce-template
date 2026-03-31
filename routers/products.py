@@ -40,14 +40,13 @@ def product_list(
 ):
     products = db.query(models.Product).all()
 
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "products.html",
         {
             "request": request,
             "products": products
         }
     )
-
 
 # ---------------------------
 # Add Product (Seller)
