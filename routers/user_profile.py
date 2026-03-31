@@ -38,7 +38,7 @@ def user_profile(
         .all()
     )
 
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "user_profile.html",
         {
             "request": request,
@@ -56,7 +56,7 @@ def edit_profile(
     user_id: int = Depends(get_current_user)
 ):
     user = db.query(User).filter(User.id == user_id).first()
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "user_profile_edit.html",
         {"request": request, "user": user}
     )

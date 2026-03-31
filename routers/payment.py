@@ -65,7 +65,7 @@ def payment_page(order_id: int, request: Request, db: Session = Depends(fast_db)
         "razorpay_order_id": order.razorpay_order_id
     }
 
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "payment.html",
         {
             "request": request,

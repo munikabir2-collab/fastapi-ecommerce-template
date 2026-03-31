@@ -83,7 +83,7 @@ def view_cart(request: Request, db: Session = Depends(fast_db)):
         for item in items
     )
 
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "cart.html",
         {"request": request, "items": items, "total": total}
     )
@@ -119,7 +119,7 @@ async def checkout(
 
     # 🚫 CART EMPTY
     if not cart_items:
-        return templates.TemplateResponse(
+        return request.app.state.templates.TemplateResponse(
             "cart_empty.html",
             {"request": request}
         )

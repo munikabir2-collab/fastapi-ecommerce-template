@@ -81,23 +81,24 @@ app.include_router(subscription.router)
 # -----------------------
 # HOME ROUTE
 # -----------------------
-from fastapi.responses import HTMLResponse
-
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, db: Session = Depends(get_db)):
 
     user = db.query(models.User).first()
 
     if not user:
-        return HTMLResponse("""
-            <h2>Login Required</h2>
-            <a href="/login">Go to Login</a>
-        """)
+        return request.app.state.templates.TemplateResponse(
+            "login.html",
+            {"request": request}
+        )
 
-    return HTMLResponse(f"""
-        <h2>Welcome {user.name}</h2>
-        <a href="/products">Go to Products</a>
-    """)
+    return request.app.state.templates.TemplateResponse(
+        "login.html",
+        {
+            "request": request,
+            "user": user
+        }
+    )
 # -----------------------
 # RUN LOCAL
 # -----------------------

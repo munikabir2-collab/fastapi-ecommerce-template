@@ -34,7 +34,7 @@ def order_page(request: Request, db: Session = Depends(fast_db)):
     cart_items = db.query(Cart).filter(Cart.user_id == user_id).all()
     total = sum(item.product.price * item.quantity for item in cart_items if item.product)
 
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "order.html",
         {"request": request, "cart_items": cart_items, "total": total}
     )
@@ -120,7 +120,7 @@ def order_details(order_id: int, request: Request, db: Session = Depends(fast_db
     order_items = db.query(OrderItem).filter(OrderItem.order_id == order_id).all()
     total = sum(item.total_price for item in order_items)
 
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "order_details.html",
         {"request": request, "order": order, "order_items": order_items, "total": total}
     )

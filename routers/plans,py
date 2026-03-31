@@ -26,7 +26,7 @@ def plan_list(request: Request, db: Session = Depends(fast_db)):
    plans = db.query(models.Plan).all()
 
 if not plans:
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "plans.html",
         {
             "request": request,

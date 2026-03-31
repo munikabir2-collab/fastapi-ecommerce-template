@@ -28,7 +28,7 @@ def show_plans(request: Request, db: Session = Depends(fast_db)):
 
     plans = db.query(models.Plan).all()
 
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "plans.html",
         {
             "request": request,

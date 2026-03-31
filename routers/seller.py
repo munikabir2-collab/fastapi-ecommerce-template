@@ -77,7 +77,7 @@ def get_current_seller(request: Request):
 # ---------------------------
 @router.get("/login")
 def seller_login_page(request: Request):
-    return templates.TemplateResponse("seller_login.html", {"request": request})
+    return request.app.state.templates.TemplateResponse("seller_login.html", {"request": request})
 
 @router.post("/login")
 def seller_login(request: Request, username: str = Form(...), password: str = Form(...), db: Session = Depends(fast_db)):
@@ -120,7 +120,7 @@ def seller_dashboard(request: Request, db: Session = Depends(fast_db), seller_id
     ).first()
 
 
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "dashboard.html",
         {
             "request": request,
