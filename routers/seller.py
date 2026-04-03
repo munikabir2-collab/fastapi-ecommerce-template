@@ -136,7 +136,7 @@ def seller_dashboard(request: Request, db: Session = Depends(fast_db), seller_id
 # ---------------------------
 @router.get("/add_product")
 def add_product_page(request: Request, seller_id: int = Depends(get_current_seller)):
-    return templates.TemplateResponse("add_product.html", {"request": request})
+    return request.app.state.templates.TemplateResponse("add_product.html", {"request": request})
 
 @router.post("/add_product")
 async def add_product(

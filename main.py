@@ -25,10 +25,13 @@ from routers import (
     subscription
 )
 
+load_dotenv(dotenv_path=".env", override=True)
+
+
 # -----------------------
 # LOAD ENV
 # -----------------------
-load_dotenv()
+
 
 # -----------------------
 # APP SETUP
@@ -52,7 +55,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(
     directory=os.path.join(BASE_DIR, "templates")
 )
-app.state.templates = templates
+
 # -----------------------
 # STATIC FILES
 # -----------------------

@@ -9,7 +9,6 @@ import os
 import qrcode
 import uuid
 
-
 router = APIRouter(prefix="/payment", tags=["Payment"])
 #templates = Jinja2Templates(directory="templates")
 
@@ -29,10 +28,13 @@ def fast_db():
 # RAZORPAY CLIENT
 # ---------------------------
 def get_client():
-    return razorpay.Client(
-        auth=(os.getenv("RAZORPAY_KEY"), os.getenv("RAZORPAY_SECRET"))
-    )
+    key = os.getenv("RAZORPAY_KEY")
+    secret = os.getenv("RAZORPAY_SECRET")
 
+    print("LIVE KEY:", key)
+    print("LIVE SECRET:", secret)
+
+    return razorpay.Client(auth=(key, secret))
 
 # ---------------------------
 # PAYMENT PAGE
