@@ -38,7 +38,7 @@ def verify_password(password, hashed):
 # -----------------------
 @router.get("/register")
 def register_page(request: Request):
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "register.html",
         {"request": request}
     )
@@ -62,7 +62,7 @@ def register_user(
     ).first()
 
     if existing_user:
-        return request.app.state.templates.TemplateResponse(
+        return templates.TemplateResponse(
             "register.html",
             {"request": request, "error": "User already exists"}
         )
@@ -89,7 +89,7 @@ def register_user(
 # -----------------------
 @router.get("/login")
 def login_page(request: Request):
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "login.html",
         {"request": request}
     )
@@ -105,7 +105,7 @@ def login_user(
     user = db.query(User).filter(User.username == username).first()
 
     if not user or not verify_password(password, user.password):
-        return request.app.state.templates.TemplateResponse(
+        return templates.TemplateResponse(
             "login.html",
             {"request": request, "error": "Invalid credentials"}
         )

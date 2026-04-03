@@ -51,7 +51,7 @@ pwd_context = CryptContext(
 # ---------------------------
 router = APIRouter(prefix="/seller", tags=["seller"])
 
-#templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")
 
 # ---------------------------
 # DB dependency
@@ -77,7 +77,7 @@ def get_current_seller(request: Request):
 # ---------------------------
 @router.get("/login")
 def seller_login_page(request: Request):
-    return request.app.state.templates.TemplateResponse("seller_login.html", {"request": request})
+    return templates.TemplateResponse("seller_login.html", {"request": request})
 
 @router.post("/login")
 def seller_login(request: Request, username: str = Form(...), password: str = Form(...), db: Session = Depends(fast_db)):
@@ -120,7 +120,7 @@ def seller_dashboard(request: Request, db: Session = Depends(fast_db), seller_id
     ).first()
 
 
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "dashboard.html",
         {
             "request": request,
@@ -136,7 +136,7 @@ def seller_dashboard(request: Request, db: Session = Depends(fast_db), seller_id
 # ---------------------------
 @router.get("/add_product")
 def add_product_page(request: Request, seller_id: int = Depends(get_current_seller)):
-    return request.app.state.templates.TemplateResponse("add_product.html", {"request": request})
+    return templates.TemplateResponse("add_product.html", {"request": request})
 
 @router.post("/add_product")
 async def add_product(

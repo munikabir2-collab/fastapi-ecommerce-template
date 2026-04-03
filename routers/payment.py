@@ -10,7 +10,7 @@ import qrcode
 import uuid
 
 router = APIRouter(prefix="/payment", tags=["Payment"])
-#templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")
 
 
 # ---------------------------
@@ -67,7 +67,7 @@ def payment_page(order_id: int, request: Request, db: Session = Depends(fast_db)
         "razorpay_order_id": order.razorpay_order_id
     }
 
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "payment.html",
         {
             "request": request,

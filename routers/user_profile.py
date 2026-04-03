@@ -7,7 +7,7 @@ from database import fast_db
 from models import User, Order, Cart
 
 router = APIRouter()
-#templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")
 
 
 def get_current_user(request: Request):
@@ -38,7 +38,7 @@ def user_profile(
         .all()
     )
 
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "user_profile.html",
         {
             "request": request,
@@ -56,7 +56,7 @@ def edit_profile(
     user_id: int = Depends(get_current_user)
 ):
     user = db.query(User).filter(User.id == user_id).first()
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "user_profile_edit.html",
         {"request": request, "user": user}
     )

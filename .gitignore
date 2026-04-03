@@ -28,3 +28,5 @@ Thumbs.db
 
 # PDF invoices (optional, if you don't want to track them)
 invoices/*.pdf
+upi_qr_*.png
+.env

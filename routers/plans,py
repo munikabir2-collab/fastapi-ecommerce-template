@@ -9,7 +9,7 @@ router = APIRouter(
     tags=["Plans"]
 )
 
-#templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")
 
 
 def fast_db():
@@ -26,7 +26,7 @@ def plan_list(request: Request, db: Session = Depends(fast_db)):
    plans = db.query(models.Plan).all()
 
 if not plans:
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "plans.html",
         {
             "request": request,

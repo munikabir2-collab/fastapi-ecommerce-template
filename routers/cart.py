@@ -9,7 +9,7 @@ from models import Cart, Product, Order, OrderItem
 from routers.seller import send_notification
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
-#templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")
 
 # ---------------------------
 # Auth
@@ -83,7 +83,7 @@ def view_cart(request: Request, db: Session = Depends(fast_db)):
         for item in items
     )
 
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "cart.html",
         {"request": request, "items": items, "total": total}
     )
@@ -119,7 +119,7 @@ async def checkout(
 
     # 🚫 CART EMPTY
     if not cart_items:
-        return request.app.state.templates.TemplateResponse(
+        return templates.TemplateResponse(
             "cart_empty.html",
             {"request": request}
         )

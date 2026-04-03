@@ -13,7 +13,7 @@ router = APIRouter(
     tags=["Shop"]
 )
 
-#templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")
 
 # ---------------------------
 # DB Dependency
@@ -31,7 +31,7 @@ def fast_db():
 
 @router.get("/add")
 def shop_form(request: Request):
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "shop_form.html",
         {"request": request}
     )
@@ -75,7 +75,7 @@ def shop_products(
     if not seller:
         raise HTTPException(status_code=404, detail="Shop not found")
 
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "shop_view.html",
         {
             "request": request,

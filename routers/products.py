@@ -16,7 +16,7 @@ router = APIRouter(
     tags=["Products"]
 )
 
-#templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")
 
 
 # ---------------------------
@@ -40,7 +40,7 @@ def product_list(
 ):
     products = db.query(models.Product).all()
 
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "products.html",
         {
             "request": request,

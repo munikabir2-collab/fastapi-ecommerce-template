@@ -21,7 +21,7 @@ router = APIRouter(
     tags=["Seller"]
 )
 
-#templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")
 
 
 # 🔐 Only seller access
@@ -106,7 +106,7 @@ def seller_profile(
         Subscription.is_active == True
     ).first()
 
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "seller_profile.html",
         {
             "request": request,
@@ -138,7 +138,7 @@ def edit_seller_profile(
         db.commit()
         db.refresh(profile)
 
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "seller_profile_edit.html",
         {
             "request": request,

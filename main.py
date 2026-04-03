@@ -24,7 +24,7 @@ from routers import (
     user_profile,
     subscription
 )
-
+print(type("login.html"))  # should be str
 load_dotenv(dotenv_path=".env", override=True)
 
 
@@ -90,12 +90,12 @@ def home(request: Request, db: Session = Depends(get_db)):
     user = db.query(models.User).first()
 
     if not user:
-        return request.app.state.templates.TemplateResponse(
+        return templates.TemplateResponse(
             "login.html",
             {"request": request}
         )
 
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "login.html",
         {
             "request": request,

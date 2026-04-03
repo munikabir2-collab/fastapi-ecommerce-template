@@ -8,7 +8,7 @@ from database import SessionLocal
 import models
 
 router = APIRouter()
-#templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")
 
 
 def fast_db():
@@ -28,7 +28,7 @@ def show_plans(request: Request, db: Session = Depends(fast_db)):
 
     plans = db.query(models.Plan).all()
 
-    return request.app.state.templates.TemplateResponse(
+    return templates.TemplateResponse(
         "plans.html",
         {
             "request": request,
