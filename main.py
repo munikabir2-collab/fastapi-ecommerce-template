@@ -80,13 +80,11 @@ app.include_router(subscription.router)
 # -----------------------
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, db: Session = Depends(get_db)):
-
     user = db.query(models.User).first()
-
     context = {"request": request}
-    if user:
-        context["user"] = user
 
+    if user:
+        context["user"] = user.to_dict()  # ✅ convert to dict
     return templates.TemplateResponse("login.html", context)
 # -----------------------
 # RUN LOCAL

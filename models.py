@@ -63,6 +63,8 @@ class Order(Base):
         back_populates="sales",
         foreign_keys=[seller_id]
     )
+# models.py
+
 class User(Base):
     __tablename__ = "users"
     __table_args__ = {"extend_existing": True}
@@ -81,7 +83,6 @@ class User(Base):
         back_populates="user",
         foreign_keys="[Order.user_id]"
     )
-
     sales = relationship(
         "Order",
         back_populates="seller",
@@ -89,8 +90,17 @@ class User(Base):
     )
     bank_account = relationship("SellerBank", uselist=False, back_populates="seller")
 
-    
-
+    # ✅ Add this helper method
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
+            "role": self.role
+            # optionally, add related objects like orders/sales/bank_account if needed
+        }
 class OrderItem(Base):
     __tablename__ = "order_items"
 
@@ -112,7 +122,17 @@ class OrderItem(Base):
     # snapshot
     product_name = Column(String)
     is_paid_to_seller = Column(Boolean, default=False)
-     
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
+            "role": self.role
+            # ⚠️ relationships ko yahan na bheje, optional hai
+        } 
     
 
 
