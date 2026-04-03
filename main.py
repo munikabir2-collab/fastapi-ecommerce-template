@@ -83,19 +83,11 @@ def home(request: Request, db: Session = Depends(get_db)):
 
     user = db.query(models.User).first()
 
-    if not user:
-        return templates.TemplateResponse(
-            "login.html",
-            {"request": request}
-        )
+    context = {"request": request}
+    if user:
+        context["user"] = user
 
-    return templates.TemplateResponse(
-        "login.html",
-        {
-            "request": request,
-            "user": user
-        }
-    )
+    return templates.TemplateResponse("login.html", context)
 # -----------------------
 # RUN LOCAL
 # -----------------------
