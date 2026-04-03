@@ -63,34 +63,33 @@ class Order(Base):
         back_populates="sales",
         foreign_keys=[seller_id]
     )
+    user = relationship("User", back_populates="orders", foreign_keys=[user_id])
+    seller = relationship("User", back_populates="sales", foreign_keys=[seller_id]) 
+
+
+
 # models.py
 
+# models.py
 class User(Base):
     __tablename__ = "users"
-    __table_args__ = {"extend_existing": True}
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True)
     password = Column(String)
     name = Column(String)
     email = Column(String)
     phone = Column(String)
     role = Column(String, default="user")
 
-    # 🔹 Explicit relationships to avoid ambiguity
-    orders = relationship(
-        "Order",
-        back_populates="user",
-        foreign_keys="[Order.user_id]"
-    )
-    sales = relationship(
-        "Order",
-        back_populates="seller",
-        foreign_keys="[Order.seller_id]"
-    )
+    # relationships
+    orders = relationship("Order", back_populates="user")
+    sales = relationship("Order", back_populates="seller")
     bank_account = relationship("SellerBank", uselist=False, back_populates="seller")
 
-    # ✅ Add this helper method
+    orders = relationship("Order", back_populates="user", foreign_keys="Order.user_id")
+    sales = relationship("Order", back_populates="seller", foreign_keys="Order.seller_id")
+
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -98,8 +97,9 @@ class User(Base):
             "name": self.name,
             "email": self.email,
             "phone": self.phone,
-            "role": self.role
-            # optionally, add related objects like orders/sales/bank_account if needed
+            "role": self.role,
+            # Optional: add related objects carefully if needed
+            # "bank_account": self.bank_account.to_dict() if self.bank_account else None
         }
 class OrderItem(Base):
     __tablename__ = "order_items"

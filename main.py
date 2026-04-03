@@ -6,7 +6,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 import os
-
+from models import User   
 import models
 from database import get_db   # ✅ only needed import
 from auth import router as auth_router
@@ -78,13 +78,15 @@ app.include_router(subscription.router)
 # -----------------------
 # HOME ROUTE
 # -----------------------
+# main.py
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, db: Session = Depends(get_db)):
-    user = db.query(models.User).first()
+    user = db.query(User).first()
     context = {"request": request}
 
     if user:
-        context["user"] = user.to_dict()  # ✅ convert to dict
+        context["user"] = user.to_dict()  # Convert model to dict
+
     return templates.TemplateResponse("login.html", context)
 # -----------------------
 # RUN LOCAL
