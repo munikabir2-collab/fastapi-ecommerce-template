@@ -16,8 +16,8 @@
                 <div class="card-body text-center">
 
                     {% if user %}
-                        <h4 class="mb-1">👤 {{ user.name }}</h4>
-                        <p class="text-muted mb-2">📧 {{ user.email }}</p>
+                        <h4 class="mb-1">👤 {{ user.get('name', 'Guest') }}</h4>
+                        <p class="text-muted mb-2">📧 {{ user.get('email', 'N/A') }}</p>
                         <span class="badge bg-primary">User</span>
                         <br><br>
                         <a href="/user/profile/edit" class="btn btn-outline-primary btn-sm">Edit Profile</a>
@@ -40,31 +40,32 @@
 
                 <div class="card-body">
                     {% if orders %}
-                        <ul class="list-group">
-                            {% for order in orders %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>Order #{{ order.id }}</strong><br>
-                                        <small class="text-muted">
-                                            {{ order.status }} · {{ order.created_at.strftime("%d %b %Y") }}
-                                        </small>
-                                    </div>
-                                    <div class="text-end">
-                                        <span class="fw-bold me-3">₹ {{ order.total }}</span>
+                        <ul>
+                        {% for order in orders %}
+                            <li class="mb-3">
+                                <p><strong>Order ID:</strong> {{ order.get('id', 'N/A') }}</p>
+                                <p><strong>Created At:</strong> {{ order.get('created_at', 'N/A') }}</p>
+                                <p><strong>Status:</strong> {{ order.get('status', 'N/A') }}</p>
+                                <p><strong>Total Amount:</strong> {{ order.get('total_amount', 'N/A') }}</p>
 
-                                        {% if order.status == "PLACED" or order.status == "CONFIRMED" %}
-                                            <form method="post" action="/user/order/cancel/{{ order.id }}" style="display:inline;">
-                                                <button class="btn btn-danger btn-sm">Cancel</button>
-                                            </form>
-                                        {% else %}
-                                            <span class="text-muted small">Locked</span>
-                                        {% endif %}
-                                    </div>
-                                </li>
-                            {% endfor %}
+                                {% if order.get('items') %}
+                                    <ul>
+                                    {% for item in order.get('items', []) %}
+                                        <li>
+                                            <strong>Product:</strong> {{ item.get('product', {}).get('name', 'N/A') }} <br>
+                                            <strong>Quantity:</strong> {{ item.get('quantity', 0) }} <br>
+                                            <strong>Price:</strong> {{ item.get('price', '0.00') }}
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p>No items in this order.</p>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
                         </ul>
                     {% else %}
-                        <p class="text-muted mb-0">No orders yet.</p>
+                        <p>No orders found.</p>
                     {% endif %}
                 </div>
             </div>
@@ -81,13 +82,13 @@
                             {% for item in cart_items %}
                                 <li class="list-group-item d-flex justify-content-between">
                                     <div>
-                                        {{ item.product.name }} <br>
+                                        {{ item.get('product', {}).get('name', 'N/A') }} <br>
                                         <small class="text-muted">
-                                            Qty: {{ item.quantity }}
+                                            Qty: {{ item.get('quantity', 0) }}
                                         </small>
                                     </div>
                                     <span>
-                                        ₹ {{ item.product.price * item.quantity }}
+                                        ₹ {{ (item.get('product', {}).get('price', 0) | float) * (item.get('quantity', 0) | int) }}
                                     </span>
                                 </li>
                             {% endfor %}

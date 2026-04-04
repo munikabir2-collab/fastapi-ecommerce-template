@@ -1,17 +1,14 @@
 from fastapi import APIRouter, Request, Form, Depends
+from fastapi.templating import Jinja2Templates 
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-
 from database import SessionLocal
 from models import User
-
-router = APIRouter()
+router = APIRouter()  # ✅ Must define router
 templates = Jinja2Templates(directory="templates")
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
-
 
 # -----------------------
 # DB
@@ -30,6 +27,7 @@ def fast_db():
 def hash_password(password: str):
     return pwd_context.hash(password)
 
+
 def verify_password(password, hashed):
     return pwd_context.verify(password, hashed)
 
@@ -39,7 +37,10 @@ def verify_password(password, hashed):
 # -----------------------
 @router.get("/register")
 def register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse(
+        "register.html",
+        {"request": request}
+    )
 
 
 @router.post("/register")
@@ -87,7 +88,10 @@ def register_user(
 # -----------------------
 @router.get("/login")
 def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(
+        "login.html",
+        {"request": request}
+    )
 
 
 @router.post("/login")

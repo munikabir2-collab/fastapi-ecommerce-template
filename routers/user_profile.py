@@ -16,6 +16,48 @@ def get_current_user(request: Request):
         raise HTTPException(status_code=401, detail="Not logged in")
     return user_id
 
+def serialize_user(user):
+    if not user:
+        return None
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "phone": user.phone
+        # add more fields if needed
+    }
+
+def serialize_order(order):
+    items_data = [serialize_item(i) for i in getattr(order, 'order_items', [])]
+
+    return {
+        "id": getattr(order, 'id', 'N/A'),
+        "created_at": getattr(order, 'created_at', None).strftime("%Y-%m-%d %H:%M") if getattr(order, 'created_at', None) else 'N/A',
+        "status": getattr(order, 'status', 'N/A'),
+        "total_amount": float(getattr(order, 'total', 0)),  # <-- order.total use
+        "items": items_data
+    }
+def serialize_cart(cart_item):
+    if not cart_item:
+        return None
+
+    product_data = {}
+    if getattr(cart_item, 'product', None):
+        product_data = {
+            "name": getattr(cart_item.product, 'name', 'N/A'),
+            "price": float(getattr(cart_item.product, 'price', 0))
+        }
+
+    return {
+        "id": getattr(cart_item, 'id', 'N/A'),
+        "product_id": getattr(cart_item, 'product_id', 'N/A'),
+        "quantity": getattr(cart_item, 'quantity', 0),
+        "product": product_data
+    }
+
+
+
+
 
 @router.get("/user/profile")
 def user_profile(
@@ -24,30 +66,18 @@ def user_profile(
     user_id: int = Depends(get_current_user)
 ):
     current_user = db.query(User).filter(User.id == user_id).first()
-
-    user_orders = (
-        db.query(Order)
-        .filter(Order.user_id == user_id)
-        .order_by(Order.id.desc())
-        .all()
-    )
-
-    cart_items = (
-        db.query(Cart)
-        .filter(Cart.user_id == user_id)
-        .all()
-    )
+    user_orders = db.query(Order).filter(Order.user_id == user_id).order_by(Order.id.desc()).all()
+    cart_items = db.query(Cart).filter(Cart.user_id == user_id).all()
 
     return templates.TemplateResponse(
         "user_profile.html",
         {
             "request": request,
-            "user": current_user,
-            "orders": user_orders,
-            "cart_items": cart_items
+            "user": serialize_user(current_user),
+            "orders": [serialize_order(o) for o in user_orders],
+            "cart_items": [serialize_cart(c) for c in cart_items]
         }
     )
-
 
 @router.get("/user/profile/edit")
 def edit_profile(

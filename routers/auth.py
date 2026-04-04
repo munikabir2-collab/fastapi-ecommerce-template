@@ -1,15 +1,14 @@
-from fastapi import APIRouter, Request, Form, Depends
+from fastapi import APIRouter, Request, Form
+from fastapi.templating import Jinja2Templates 
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-
 from database import SessionLocal
 from models import User
-
-router = APIRouter()
+router = APIRouter()  # ✅ Must define router
+templates = Jinja2Templates(directory="templates")
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
-
 
 # -----------------------
 # DB
