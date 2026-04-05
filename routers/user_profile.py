@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Request, Depends, HTTPException, Form
-from fastapi.templating import Jinja2Templates
+
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-
+from templates import templates
 from database import fast_db
 from models import User, Order, Cart
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 
 def get_current_user(request: Request):

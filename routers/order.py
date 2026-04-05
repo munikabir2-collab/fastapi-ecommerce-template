@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends, Form, HTTPException
-from fastapi.templating import Jinja2Templates
+from templates import templates
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from database import fast_db
@@ -9,7 +9,7 @@ from utils.webhooks import send_order_webhook
 import asyncio
 
 router = APIRouter(prefix="/order", tags=["Order"])
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 
 # ---------------------------

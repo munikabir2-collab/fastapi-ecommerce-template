@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Form, Depends, HTTPException, WebSocket, WebSocketDisconnect
-from fastapi.templating import Jinja2Templates
+from templates import templates
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -51,7 +51,7 @@ pwd_context = CryptContext(
 # ---------------------------
 router = APIRouter(prefix="/seller", tags=["seller"])
 
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 # ---------------------------
 # DB dependency

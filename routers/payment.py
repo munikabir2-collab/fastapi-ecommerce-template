@@ -1,6 +1,6 @@
 import razorpay
 from fastapi import APIRouter, Request, Depends, Form
-from fastapi.templating import Jinja2Templates
+from templates import templates
 from fastapi.responses import RedirectResponse, FileResponse
 from sqlalchemy.orm import Session
 from database import SessionLocal
@@ -10,7 +10,7 @@ import qrcode
 import uuid
 
 router = APIRouter(prefix="/payment", tags=["Payment"])
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 
 # ---------------------------

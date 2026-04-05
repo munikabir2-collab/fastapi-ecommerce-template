@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends, HTTPException, Form
-from fastapi.templating import Jinja2Templates
+from templates import templates
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
 from models import User
@@ -13,7 +13,7 @@ router = APIRouter(
     tags=["Shop"]
 )
 
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 # ---------------------------
 # DB Dependency

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends, HTTPException, Form
-from fastapi.templating import Jinja2Templates
+from templates import templates
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -21,7 +21,7 @@ router = APIRouter(
     tags=["Seller"]
 )
 
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 
 # 🔐 Only seller access

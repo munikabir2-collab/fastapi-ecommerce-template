@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from sqlalchemy.orm import Session
-from fastapi.templating import Jinja2Templates
+from templates import templates
 from database import SessionLocal
 import models
 
@@ -9,7 +9,7 @@ router = APIRouter(
     tags=["Plans"]
 )
 
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 
 def fast_db():

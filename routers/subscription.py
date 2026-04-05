@@ -2,13 +2,13 @@ from fastapi import APIRouter, Request, Depends
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
 from datetime import datetime, timedelta
-from fastapi.templating import Jinja2Templates
+from templates import templates
 
 from database import SessionLocal
 import models
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 
 # DB session dependency

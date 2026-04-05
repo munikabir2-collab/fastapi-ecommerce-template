@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends, Form, HTTPException
-from fastapi.templating import Jinja2Templates
+from templates import templates
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
@@ -9,7 +9,7 @@ from models import Cart, Product, Order, OrderItem
 from routers.seller import send_notification
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
-templates = Jinja2Templates(directory="templates")
+#templates = Jinja2Templates(directory="templates")
 
 # ---------------------------
 # Auth
