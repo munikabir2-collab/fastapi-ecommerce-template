@@ -10,7 +10,7 @@ from auth import router as auth_router
 from database import get_db
 from models import User
 
-
+from jinja2 import Environment, FileSystemLoader
 # Other routers
 from routers import (
     cart, products, seller, order, shop,
@@ -26,8 +26,11 @@ app.add_middleware(SessionMiddleware, secret_key="supersecretkey")
 
 # Templates
 templates = Jinja2Templates(directory="templates")
-
-templates.env.auto_reload = True
+templates.env = Environment(
+    loader=FileSystemLoader("templates"),
+    auto_reload=True,
+    cache_size=0   # 👈 IMPORTANT (disable cache properly)
+)
 # Static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
