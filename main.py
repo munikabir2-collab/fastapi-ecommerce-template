@@ -26,7 +26,7 @@ app.add_middleware(SessionMiddleware, secret_key="supersecretkey")
 
 # Templates
 templates = Jinja2Templates(directory="templates")
-templates.env.cache = {}
+
 templates.env.auto_reload = True
 # Static files
 app.mount("/static", StaticFiles(directory="static"), name="static")

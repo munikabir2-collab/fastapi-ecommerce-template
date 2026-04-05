@@ -26,6 +26,16 @@ def serialize_user(user):
         "phone": user.phone
         # add more fields if needed
     }
+def serialize_item(item):
+    if not item:
+        return None
+
+    return {
+        "id": item.id,
+        "product_id": item.product_id,
+        "quantity": item.quantity,
+        "price": float(getattr(item, "price", 0))
+    }
 
 def serialize_order(order):
     created = getattr(order, 'created_at', None)
