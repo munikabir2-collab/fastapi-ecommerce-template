@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Request, Depends, HTTPException, Form
-
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from templates import templates
@@ -7,7 +6,6 @@ from database import fast_db
 from models import User, Order, Cart
 
 router = APIRouter()
-#templates = Jinja2Templates(directory="templates")
 
 
 def get_current_user(request: Request):
@@ -16,6 +14,8 @@ def get_current_user(request: Request):
         raise HTTPException(status_code=401, detail="Not logged in")
     return user_id
 
+
+# ✅ USER SERIALIZER
 def serialize_user(user):
     if not user:
         return None
@@ -24,23 +24,42 @@ def serialize_user(user):
         "name": user.name,
         "email": user.email,
         "phone": user.phone
-        # add more fields if needed
     }
+
+
+# ✅ ITEM SERIALIZER (🔥 product name added)
 def serialize_item(item):
     if not item:
         return None
+
+    product_data = {}
+    if getattr(item, "product", None):
+        product_data = {
+            "name": getattr(item.product, "name", "N/A"),
+            "price": float(getattr(item.product, "price", 0))
+        }
 
     return {
         "id": item.id,
         "product_id": item.product_id,
         "quantity": item.quantity,
-        "price": float(getattr(item, "price", 0))
+        "price": float(getattr(item, "price", 0)),
+        "product": product_data   # ✅ important
     }
 
+
+# ✅ ORDER SERIALIZER (safe version)
 def serialize_order(order):
     created = getattr(order, 'created_at', None)
 
-    items_data = [serialize_item(i) for i in getattr(order, 'order_items', [])]
+    items = getattr(order, 'order_items', []) or []
+
+    items_data = []
+    for i in items:
+        try:
+            items_data.append(serialize_item(i))
+        except:
+            continue
 
     return {
         "id": getattr(order, 'id', 'N/A'),
@@ -49,6 +68,9 @@ def serialize_order(order):
         "total_amount": float(getattr(order, 'total', 0)),
         "items": items_data
     }
+
+
+# ✅ CART SERIALIZER
 def serialize_cart(cart_item):
     if not cart_item:
         return None
@@ -68,9 +90,7 @@ def serialize_cart(cart_item):
     }
 
 
-
-
-
+# ✅ PROFILE ROUTE
 @router.get("/user/profile")
 def user_profile(
     request: Request,
@@ -81,16 +101,33 @@ def user_profile(
     user_orders = db.query(Order).filter(Order.user_id == user_id).order_by(Order.id.desc()).all()
     cart_items = db.query(Cart).filter(Cart.user_id == user_id).all()
 
+    # ✅ safe build
+    orders_data = []
+    for o in user_orders:
+        try:
+            orders_data.append(serialize_order(o))
+        except:
+            continue
+
+    cart_data = []
+    for c in cart_items:
+        try:
+            cart_data.append(serialize_cart(c))
+        except:
+            continue
+
     return templates.TemplateResponse(
         "user_profile.html",
         {
             "request": request,
             "user": serialize_user(current_user),
-            "orders": [serialize_order(o) for o in user_orders],
-            "cart_items": [serialize_cart(c) for c in cart_items]
+            "orders": orders_data,
+            "cart_items": cart_data
         }
     )
 
+
+# ✅ EDIT PROFILE
 @router.get("/user/profile/edit")
 def edit_profile(
     request: Request,
@@ -104,6 +141,7 @@ def edit_profile(
     )
 
 
+# ✅ UPDATE PROFILE
 @router.post("/user/profile/edit")
 def update_profile(
     name: str = Form(...),
