@@ -10,7 +10,7 @@ from auth import router as auth_router
 from database import get_db
 from models import User
 from templates import templates
-from jinja2 import Environment, FileSystemLoader
+
 # Other routers
 from routers import (
     cart, products, seller, order, shop,
