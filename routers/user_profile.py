@@ -28,13 +28,15 @@ def serialize_user(user):
     }
 
 def serialize_order(order):
+    created = getattr(order, 'created_at', None)
+
     items_data = [serialize_item(i) for i in getattr(order, 'order_items', [])]
 
     return {
         "id": getattr(order, 'id', 'N/A'),
-        "created_at": getattr(order, 'created_at', None).strftime("%Y-%m-%d %H:%M") if getattr(order, 'created_at', None) else 'N/A',
+        "created_at": created.strftime("%Y-%m-%d %H:%M") if created else 'N/A',
         "status": getattr(order, 'status', 'N/A'),
-        "total_amount": float(getattr(order, 'total', 0)),  # <-- order.total use
+        "total_amount": float(getattr(order, 'total', 0)),
         "items": items_data
     }
 def serialize_cart(cart_item):

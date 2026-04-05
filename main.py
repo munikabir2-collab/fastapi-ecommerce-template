@@ -26,7 +26,8 @@ app.add_middleware(SessionMiddleware, secret_key="supersecretkey")
 
 # Templates
 templates = Jinja2Templates(directory="templates")
-
+templates.env.cache = {}
+templates.env.auto_reload = True
 # Static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -43,18 +44,21 @@ app.include_router(seller_profile.router)
 app.include_router(user_profile.router)
 app.include_router(subscription.router)
 
+
 # Home route
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, db: Session = Depends(get_db)):
-    context = {"request": request}  # only request for now
+    context = {"request": request}
 
-    # Optional: add user if exists
     user = db.query(User).first()
+
     if user:
-        context["user"] = user.to_dict()  # safe now
+        context["user"] = {
+            "id": user.id,
+            "name": user.name
+        }
 
     return templates.TemplateResponse("login.html", context)
-
 # Run local
 if __name__ == "__main__":
     import uvicorn
