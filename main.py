@@ -66,26 +66,9 @@ app.include_router(subscription.router)
 # ==============================
 # HOME ROUTE
 # ==============================
-@app.get("/", response_class=HTMLResponse)
-def home(request: Request, db: Session = Depends(get_db)):
-
-    context = {"request": request}
-
-    try:
-        user = db.query(User).first()
-        if user:
-            context["user"] = {
-                "id": user.id,
-                "name": user.name
-            }
-    except Exception:
-        context["user"] = None
-
-    return templates.TemplateResponse(
-        "login.html",
-        context
-    )
-
+@app.get("/")
+def home():
+    return {"status": "ok"}
 
 # ==============================
 # RUN LOCALLY
