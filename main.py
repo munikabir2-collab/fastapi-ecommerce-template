@@ -9,7 +9,7 @@ import os
 from auth import router as auth_router
 from database import get_db
 from models import User
-from templates import templates
+
 
 # Other routers
 from routers import (
