@@ -66,9 +66,26 @@ app.include_router(subscription.router)
 # ==============================
 # HOME ROUTE
 # ==============================
-@app.get("/")
-def home():
-    return {"status": "ok"}
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request, db: Session = Depends(get_db)):
+
+    context = {"request": request}
+
+    try:
+        user = db.query(User).first()
+        if user:
+            context["user"] = {
+                "id": user.id,
+                "name": user.name
+            }
+    except Exception:
+        context["user"] = None
+
+    return templates.TemplateResponse(
+        "login.html",
+        context
+    )
+
 
 # ==============================
 # RUN LOCALLY
@@ -78,12 +95,5 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
 
-@app.on_event("startup")
-def startup():
-    try:
-        from models import Base
-        from database import engine
-        Base.metadata.create_all(bind=engine)
-        print("DB tables created successfully")
-    except Exception as e:
-        print("DB startup error:", e)
+
+    
