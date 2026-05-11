@@ -97,5 +97,10 @@ if __name__ == "__main__":
 
 @app.on_event("startup")
 def startup():
-    # Create tables on startup
-    Base.metadata.create_all(bind=engine)
+    try:
+        from models import Base
+        from database import engine
+        Base.metadata.create_all(bind=engine)
+        print("DB tables created successfully")
+    except Exception as e:
+        print("DB startup error:", e)
