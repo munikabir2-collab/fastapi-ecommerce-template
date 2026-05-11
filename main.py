@@ -46,6 +46,7 @@ app.include_router(subscription.router)
 # Home route
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, db: Session = Depends(get_db)):
+    # Initialize the context with the required request object
     context = {"request": request}
 
     user = db.query(User).first()
@@ -56,7 +57,11 @@ def home(request: Request, db: Session = Depends(get_db)):
             "name": user.name
         }
 
-    return templates.TemplateResponse("login.html", context)
+    # Use explicit keyword arguments to avoid positional argument confusion
+    return templates.TemplateResponse(
+        name="login.html", 
+        context=context
+    )
 # Run local
 if __name__ == "__main__":
     import uvicorn
