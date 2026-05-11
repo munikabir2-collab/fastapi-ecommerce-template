@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Request, Depends, HTTPException, Form
-from templates import templates
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime, timedelta
 
 from database import fast_db
+from templates import templates
+
 from models import (
     User,
     Product,
@@ -21,89 +22,122 @@ router = APIRouter(
     tags=["Seller"]
 )
 
-#templates = Jinja2Templates(directory="templates")
 
+# =====================================================
+# AUTH
+# =====================================================
 
-# 🔐 Only seller access
 def get_current_seller(request: Request):
-    role = request.session.get("role")
-    seller_id = request.session.get("user_id")   # FIXED
 
-    if role != "seller":
-        raise HTTPException(status_code=403, detail="Seller only")
+    seller_id = request.session.get("seller_id")
 
     if not seller_id:
-        raise HTTPException(status_code=401, detail="Not logged in")
+        raise HTTPException(
+            status_code=401,
+            detail="Login required"
+        )
 
     return seller_id
+# =====================================================
+# SELLER PROFILE / DASHBOARD
+# =====================================================
 
-
-# 🏪 Seller Dashboard / Profile
 @router.get("/profile")
 def seller_profile(
     request: Request,
     db: Session = Depends(fast_db),
     seller_id: int = Depends(get_current_seller)
 ):
-    print("CURRENT SELLER:", seller_id)
-     
-    seller = db.query(User).filter(User.id == seller_id).first()
+
+    seller = db.query(User).filter(
+        User.id == seller_id
+    ).first()
 
     if not seller:
         raise HTTPException(status_code=404, detail="Seller not found")
 
-    # 🔥 Auto create profile
+    # =================================================
+    # PROFILE
+    # =================================================
+
     profile = db.query(SellerProfile).filter(
         SellerProfile.seller_id == seller_id
     ).first()
 
     if not profile:
+
         profile = SellerProfile(
             seller_id=seller_id,
             shop_name="My Shop",
             shop_description=""
         )
+
         db.add(profile)
         db.commit()
         db.refresh(profile)
 
-    # 📦 Products
+    # =================================================
+    # PRODUCTS
+    # =================================================
+
     products = db.query(Product).filter(
         Product.seller_id == seller_id
     ).order_by(Product.id.desc()).all()
 
-    # 🔔 Notifications
+    # =================================================
+    # ORDERS
+    # =================================================
+
+    orders = db.query(Order).join(
+        OrderItem,
+        OrderItem.order_id == Order.id
+    ).filter(
+        OrderItem.seller_id == seller_id
+    ).order_by(Order.id.desc()).all()
+
+    # =================================================
+    # NOTIFICATIONS
+    # =================================================
+
     notifications = db.query(Notification).filter(
         Notification.seller_id == seller_id
     ).order_by(Notification.created_at.desc()).limit(20).all()
 
-    # 📊 Orders
+    # =================================================
+    # STATS
+    # =================================================
+
     total_orders = db.query(
         func.count(func.distinct(Order.id))
     ).join(
-        OrderItem, OrderItem.order_id == Order.id
+        OrderItem,
+        OrderItem.order_id == Order.id
     ).filter(
         OrderItem.seller_id == seller_id
     ).scalar() or 0
 
-    # 💰 Revenue
     total_revenue = db.query(
-        func.coalesce(func.sum(OrderItem.price * OrderItem.qty), 0)
-    ).join(
-        Order, Order.id == OrderItem.order_id
+        func.coalesce(
+            func.sum(OrderItem.price * OrderItem.qty),
+            0
+        )
     ).filter(
         OrderItem.seller_id == seller_id
     ).scalar()
 
     stats = {
         "total_orders": total_orders,
-        "total_revenue": total_revenue
+        "total_revenue": total_revenue,
+        "total_products": len(products)
     }
 
-    # ⭐ Subscription
+    # =================================================
+    # SUBSCRIPTION
+    # =================================================
+
     subscription = db.query(Subscription).filter(
         Subscription.seller_id == seller_id,
-        Subscription.is_active == True
+        Subscription.is_active.is_(True)
     ).first()
 
     return templates.TemplateResponse(
@@ -113,6 +147,7 @@ def seller_profile(
             "seller": seller,
             "profile": profile,
             "products": products,
+            "orders": orders,
             "notifications": notifications,
             "subscription": subscription,
             "stats": stats
@@ -120,23 +155,20 @@ def seller_profile(
     )
 
 
-# ✏ Edit Profile Page
+# =====================================================
+# EDIT PROFILE PAGE
+# =====================================================
+
 @router.get("/profile/edit")
-def edit_seller_profile(
+def edit_profile(
     request: Request,
     db: Session = Depends(fast_db),
     seller_id: int = Depends(get_current_seller)
 ):
+
     profile = db.query(SellerProfile).filter(
         SellerProfile.seller_id == seller_id
     ).first()
-
-    if not profile:
-        # 🔥 auto create (optional but recommended)
-        profile = SellerProfile(seller_id=seller_id)
-        db.add(profile)
-        db.commit()
-        db.refresh(profile)
 
     return templates.TemplateResponse(
         "seller_profile_edit.html",
@@ -146,17 +178,19 @@ def edit_seller_profile(
         }
     )
 
-# 💾 Update Profile
-@router.post("/profile/edit")
-def update_seller_profile(
-    shop_name: str = Form(...),
-    shop_description: str = Form(None),
 
-    # ✅ NEW FIELDS
-    gst_no: str = Form(None),
-    address: str = Form(None),
-    state: str = Form(None),
-    pincode: str = Form(None),
+# =====================================================
+# UPDATE PROFILE
+# =====================================================
+
+@router.post("/profile/edit")
+def update_profile(
+    shop_name: str = Form(...),
+    shop_description: str = Form(""),
+    gst_no: str = Form(""),
+    address: str = Form(""),
+    state: str = Form(""),
+    pincode: str = Form(""),
 
     db: Session = Depends(fast_db),
     seller_id: int = Depends(get_current_seller)
@@ -169,7 +203,6 @@ def update_seller_profile(
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
 
-    # ✅ SAVE ALL
     profile.shop_name = shop_name
     profile.shop_description = shop_description
     profile.gst_no = gst_no
@@ -179,12 +212,21 @@ def update_seller_profile(
 
     db.commit()
 
-    return RedirectResponse("/seller/profile", status_code=303)
-# 📦 Update Stock
+    return RedirectResponse(
+        "/seller/profile",
+        status_code=303
+    )
+
+
+# =====================================================
+# UPDATE STOCK
+# =====================================================
+
 @router.post("/product/{product_id}/stock")
-def update_product_stock(
+def update_stock(
     product_id: int,
     stock: int = Form(...),
+
     db: Session = Depends(fast_db),
     seller_id: int = Depends(get_current_seller)
 ):
@@ -198,54 +240,149 @@ def update_product_stock(
         raise HTTPException(status_code=404, detail="Product not found")
 
     product.stock = stock
+
     db.commit()
 
-    return RedirectResponse("/seller/profile", status_code=303)
+    return RedirectResponse(
+        "/seller/profile",
+        status_code=303
+    )
 
 
-# ⭐ Subscription Page
+# =====================================================
+# DASHBOARD REDIRECT
+# =====================================================
+
+@router.get("/dashboard")
+def seller_dashboard():
+
+    return RedirectResponse(
+        url="/seller/profile",
+        status_code=303
+    )
+
+
+# =====================================================
+# CREATE PROFILE PAGE
+# =====================================================
+
+@router.get("/profile/create")
+def create_profile_page(
+    request: Request,
+    seller_id: int = Depends(get_current_seller)
+):
+
+    return templates.TemplateResponse(
+        "seller_profile_create.html",
+        {
+            "request": request
+        }
+    )
+
+
+# =====================================================
+# CREATE PROFILE
+# =====================================================
+
+@router.post("/profile/create")
+def create_profile(
+    shop_name: str = Form(...),
+    shop_description: str = Form(""),
+    gst_no: str = Form(""),
+    address: str = Form(""),
+    state: str = Form(""),
+    pincode: str = Form(""),
+
+    db: Session = Depends(fast_db),
+    seller_id: int = Depends(get_current_seller)
+):
+
+    existing = db.query(SellerProfile).filter(
+        SellerProfile.seller_id == seller_id
+    ).first()
+
+    if existing:
+        return RedirectResponse(
+            "/seller/profile",
+            status_code=303
+        )
+
+    profile = SellerProfile(
+        seller_id=seller_id,
+        shop_name=shop_name,
+        shop_description=shop_description,
+        gst_no=gst_no,
+        address=address,
+        state=state,
+        pincode=pincode
+    )
+
+    db.add(profile)
+    db.commit()
+
+    return RedirectResponse(
+        "/seller/profile",
+        status_code=303
+    )
+
+
+# =====================================================
+# SUBSCRIPTION PAGE
+# =====================================================
+
 @router.get("/subscribe")
-def seller_subscribe_page(
+def subscribe_page(
     request: Request,
     seller_id: int = Depends(get_current_seller)
 ):
 
     return templates.TemplateResponse(
         "seller_subscribe.html",
-        {"request": request}
+        {
+            "request": request
+        }
     )
 
 
-# 💳 Subscribe
+# =====================================================
+# SUBSCRIBE
+# =====================================================
+
 @router.post("/subscribe")
-def seller_subscribe(
-    request: Request,
+def subscribe(
     plan: str = Form(...),
+
     db: Session = Depends(fast_db),
     seller_id: int = Depends(get_current_seller)
 ):
 
-    expires = None
+    expires_at = None
 
     if plan == "basic":
-        expires = datetime.utcnow() + timedelta(days=30)
+        expires_at = datetime.utcnow() + timedelta(days=30)
 
     elif plan == "pro":
-        expires = datetime.utcnow() + timedelta(days=365)
+        expires_at = datetime.utcnow() + timedelta(days=365)
 
-    # deactivate old subscription
     db.query(Subscription).filter(
         Subscription.seller_id == seller_id
-    ).update({"is_active": False})
+    ).update(
+        {
+            "is_active": False
+        }
+    )
 
-    subscription = Subscription(
+    new_subscription = Subscription(
         seller_id=seller_id,
         plan=plan,
         is_active=True,
-        expires_at=expires
+        expires_at=expires_at
     )
 
-    db.add(subscription)
+    db.add(new_subscription)
     db.commit()
 
-    return RedirectResponse("/seller/profile", status_code=303)
+    return RedirectResponse(
+        "/seller/profile",
+        status_code=303
+    )    

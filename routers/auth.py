@@ -95,31 +95,37 @@ def login_page(request: Request):
 
 
 @router.post("/login")
-def login_user(
+def seller_login(
     request: Request,
     username: str = Form(...),
     password: str = Form(...),
     db: Session = Depends(fast_db)
 ):
-    user = db.query(User).filter(User.username == username).first()
 
-    if not user or not verify_password(password, user.password):
-        return templates.TemplateResponse(
-            "login.html",
-            {"request": request, "error": "Invalid credentials"}
+    seller = db.query(User).filter(
+        User.username == username
+    ).first()
+
+    if not seller:
+        raise HTTPException(
+            status_code=401,
+            detail="User not found"
         )
 
-    request.session.clear()
-    request.session["user_id"] = user.id
-    request.session["username"] = user.username
-    request.session["role"] = user.role
+    if not pwd_context.verify(password, seller.password):
+        raise HTTPException(
+            status_code=401,
+            detail="Wrong password"
+        )
 
-    if user.role == "seller":
-        return RedirectResponse("/seller/profile", status_code=303)
+    # ✅ SESSION
+    request.session["user_id"] = seller.id
+    request.session["role"] = "seller"
 
-    return RedirectResponse("/products", status_code=303)
-
-
+    return RedirectResponse(
+        url="/seller/profile",
+        status_code=303
+    )
 # -----------------------
 # LOGOUT
 # -----------------------

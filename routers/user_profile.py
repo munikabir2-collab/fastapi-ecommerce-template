@@ -7,15 +7,18 @@ from models import User, Order, Cart
 
 router = APIRouter()
 
-
+# ---------------------------
+# AUTH
+# ---------------------------
 def get_current_user(request: Request):
     user_id = request.session.get("user_id")
     if not user_id:
         raise HTTPException(status_code=401, detail="Not logged in")
     return user_id
 
-
-# ✅ USER SERIALIZER
+# ---------------------------
+# SERIALIZERS
+# ---------------------------
 def serialize_user(user):
     if not user:
         return None
@@ -26,13 +29,11 @@ def serialize_user(user):
         "phone": user.phone
     }
 
-
-# ✅ ITEM SERIALIZER (🔥 product name added)
 def serialize_item(item):
     if not item:
         return None
 
-    product_data = {}
+    product_data = None
     if getattr(item, "product", None):
         product_data = {
             "name": getattr(item.product, "name", "N/A"),
@@ -44,38 +45,31 @@ def serialize_item(item):
         "product_id": item.product_id,
         "quantity": item.quantity,
         "price": float(getattr(item, "price", 0)),
-        "product": product_data   # ✅ important
+        "product": product_data
     }
 
-
-# ✅ ORDER SERIALIZER (safe version)
+# serializers.py
 def serialize_order(order):
-    created = getattr(order, 'created_at', None)
-
-    items = getattr(order, 'order_items', []) or []
-
-    items_data = []
-    for i in items:
-        try:
-            items_data.append(serialize_item(i))
-        except:
-            continue
-
     return {
-        "id": getattr(order, 'id', 'N/A'),
-        "created_at": created.strftime("%Y-%m-%d %H:%M") if created else 'N/A',
-        "status": getattr(order, 'status', 'N/A'),
-        "total_amount": float(getattr(order, 'total', 0)),
-        "items": items_data
+        "id": order.id,
+        "created_at": order.created_at.strftime("%Y-%m-%d %H:%M") if order.created_at else "N/A",
+        "status": order.status,
+        "total_amount": float(order.total or 0),
+        "order_items": [
+            {
+                "product_name": item.product_name or (item.product.name if item.product else "N/A"),
+                "quantity": item.qty,
+                "price": float(item.price),
+                "total_price": float(item.total_price)
+            }
+            for item in getattr(order, "order_items", [])
+        ]
     }
-
-
-# ✅ CART SERIALIZER
 def serialize_cart(cart_item):
     if not cart_item:
         return None
 
-    product_data = {}
+    product_data = None
     if getattr(cart_item, 'product', None):
         product_data = {
             "name": getattr(cart_item.product, 'name', 'N/A'),
@@ -89,8 +83,9 @@ def serialize_cart(cart_item):
         "product": product_data
     }
 
-
-# ✅ PROFILE ROUTE
+# ---------------------------
+# ROUTES
+# ---------------------------
 @router.get("/user/profile")
 def user_profile(
     request: Request,
@@ -101,33 +96,16 @@ def user_profile(
     user_orders = db.query(Order).filter(Order.user_id == user_id).order_by(Order.id.desc()).all()
     cart_items = db.query(Cart).filter(Cart.user_id == user_id).all()
 
-    # ✅ safe build
-    orders_data = []
-    for o in user_orders:
-        try:
-            orders_data.append(serialize_order(o))
-        except:
-            continue
-
-    cart_data = []
-    for c in cart_items:
-        try:
-            cart_data.append(serialize_cart(c))
-        except:
-            continue
-
     return templates.TemplateResponse(
         "user_profile.html",
         {
             "request": request,
             "user": serialize_user(current_user),
-            "orders": orders_data,
-            "cart_items": cart_data
+            "orders": [serialize_order(o) for o in user_orders],
+            "cart_items": [serialize_cart(c) for c in cart_items]
         }
     )
 
-
-# ✅ EDIT PROFILE
 @router.get("/user/profile/edit")
 def edit_profile(
     request: Request,
@@ -135,13 +113,12 @@ def edit_profile(
     user_id: int = Depends(get_current_user)
 ):
     user = db.query(User).filter(User.id == user_id).first()
+
     return templates.TemplateResponse(
         "user_profile_edit.html",
         {"request": request, "user": user}
     )
 
-
-# ✅ UPDATE PROFILE
 @router.post("/user/profile/edit")
 def update_profile(
     name: str = Form(...),
