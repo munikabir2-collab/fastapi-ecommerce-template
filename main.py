@@ -46,7 +46,10 @@ app.include_router(subscription.router)
 # Home route
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, db: Session = Depends(get_db)):
-    context = {"request": request}
+
+    context = {
+        "request": request
+    }
 
     try:
         user = db.query(User).first()
@@ -58,9 +61,18 @@ def home(request: Request, db: Session = Depends(get_db)):
     except Exception:
         context["user"] = None
 
-    return templates.TemplateResponse("login.html", context)
+   return templates.TemplateResponse(
+    "login.html",
+    context
+)
 # Run local
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+
+@app.on_event("startup")
+def startup():
+    from models import Base
+    from database import engine
+    Base.metadata.create_all(bind=engine)
