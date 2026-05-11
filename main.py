@@ -15,7 +15,7 @@ from database import get_db, engine
 # models
 from models import User, Base
 
-from templates import templates
+
 
 # Other routers
 from routers import (
@@ -70,6 +70,8 @@ app.include_router(seller_profile.router)
 app.include_router(user_profile.router)
 app.include_router(subscription.router)
 
+
+
 # ==============================
 # Home route
 # ==============================
@@ -95,7 +97,6 @@ def home(
         "login.html",
         context
     )
-
 # ==============================
 # Run local
 # ==============================
