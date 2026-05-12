@@ -69,21 +69,26 @@ app.include_router(subscription.router)
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, db: Session = Depends(get_db)):
 
-    context = {"request": request}
+    user_data = None
 
     try:
         user = db.query(User).first()
+
         if user:
-            context["user"] = {
+            user_data = {
                 "id": user.id,
                 "name": user.name
             }
-    except Exception:
-        context["user"] = None
+
+    except Exception as e:
+        print("Database Error:", e)
 
     return templates.TemplateResponse(
         "login.html",
-        context
+        {
+            "request": request,
+            "user": user_data
+        }
     )
 
 
