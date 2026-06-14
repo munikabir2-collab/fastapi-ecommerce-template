@@ -34,12 +34,17 @@ if DATABASE_URL.startswith("postgres://"):
 # ENGINE
 # =========================================
 
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    connect_args={"sslmode": "require"}
-)
+engine_kwargs = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300
+}
+
+if "render.com" in DATABASE_URL or "oregon-postgres.render.com" in DATABASE_URL:
+    engine_kwargs["connect_args"] = {"sslmode": "require"}
+
+engine = create_engine(DATABASE_URL, **engine_kwargs)
+
+
 
 # =========================================
 # SESSION
@@ -56,7 +61,7 @@ SessionLocal = sessionmaker(
 # =========================================
 
 Base = declarative_base()
-
+print("DATABASE_URL =", DATABASE_URL)
 # =========================================
 # FASTAPI DB DEPENDENCY
 # =========================================
