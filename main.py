@@ -1,55 +1,50 @@
 from fastapi import FastAPI, Request, Depends
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
-from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 import os
 
-# Auth & DB
-from auth import router as auth_router
-from database import get_db
-from models import User, Base
-from database import engine
+from database import get_db, engine
+from models import Base, User
 
 # Routers
+from auth import router as auth_router
 from routers import (
     cart, products, seller, order, shop,
-    payment, webhook, seller_profile, user_profile, subscription
+    payment, webhook, seller_profile,
+    user_profile, subscription
 )
 
-# Load env
-load_dotenv(dotenv_path=".env", override=True)
+# -----------------------------
+# Templates
+# -----------------------------
+templates = Jinja2Templates(directory="templates")
 
-# ==============================
-# LIFESPAN (NEW FASTAPI WAY)
-# ==============================
+# -----------------------------
+# Lifespan (DB table creation)
+# -----------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # create tables on startup
     Base.metadata.create_all(bind=engine)
     yield
 
+# -----------------------------
+# App init
+# -----------------------------
+app = FastAPI(lifespan=lifespan)
 
-# ==============================
-# APP INIT
-# ==============================
-app = FastAPI(lifespan=lifespan, debug=True)
-
-# Middleware
+# Session middleware
 app.add_middleware(SessionMiddleware, secret_key="supersecretkey")
-
-# Templates
-templates = Jinja2Templates(directory="templates")
 
 # Static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# ==============================
-# ROUTERS
-# ==============================
+# -----------------------------
+# Include routers (ONLY ONCE)
+# -----------------------------
 app.include_router(auth_router)
 app.include_router(products.router)
 app.include_router(cart.router)
@@ -62,26 +57,29 @@ app.include_router(seller_profile.router)
 app.include_router(user_profile.router)
 app.include_router(subscription.router)
 
-
-# ==============================
+# -----------------------------
 # HOME ROUTE
-# ==============================
+# -----------------------------
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, db: Session = Depends(get_db)):
 
     user_data = None
 
     try:
-        user = db.query(User).first()
+        user_id = request.session.get("user_id")
 
-        if user:
-            user_data = {
-                "id": user.id,
-                "name": user.name
-            }
+        if user_id:
+            user = db.query(User).filter(User.id == user_id).first()
+
+            if user:
+                user_data = {
+                    "id": user.id,
+                    "name": user.name,
+                    "username": user.username
+                }
 
     except Exception as e:
-        print("Database Error:", e)
+        print("Home Error:", e)
 
     return templates.TemplateResponse(
         "login.html",
@@ -91,14 +89,11 @@ def home(request: Request, db: Session = Depends(get_db)):
         }
     )
 
-
-# ==============================
-# RUN LOCALLY
-# ==============================
+# -----------------------------
+# RUN SERVER
+# -----------------------------
 if __name__ == "__main__":
     import uvicorn
+
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
-
-
-    

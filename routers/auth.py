@@ -1,66 +1,46 @@
-from fastapi import APIRouter, Request, Form
-from templates import templates
+from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import RedirectResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
+
 from database import SessionLocal
 from models import User
-router = APIRouter()  # ✅ Must define router
-#templates = Jinja2Templates(directory="templates")
 
-pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+router = APIRouter()
 
-# -----------------------
-# DB
-# -----------------------
-def fast_db():
+# Templates (IMPORTANT FIX)
+templates = Jinja2Templates(directory="templates")
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# ---------------- DB ----------------
+def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
-
-# -----------------------
-# PASSWORD
-# -----------------------
-def hash_password(password: str):
-    return pwd_context.hash(password)
-
-
-def verify_password(password, hashed):
-    return pwd_context.verify(password, hashed)
-
-
-# -----------------------
-# REGISTER
-# -----------------------
+# ---------------- REGISTER PAGE ----------------
 @router.get("/register")
 def register_page(request: Request):
     return templates.TemplateResponse(
         "register.html",
-        {"request": request}
+        {"request": request, "error": None}
     )
 
-
+# ---------------- REGISTER ----------------
 @router.post("/register")
-def register_user(
+def register(
     request: Request,
     username: str = Form(...),
     password: str = Form(...),
-    name: str = Form(...),
-    email: str = Form(...),
-    phone: str = Form(...),
-    address: str = Form(...),
-    state: str = Form(...),
-    pincode: str = Form(...),
-    db: Session = Depends(fast_db)
+    db: Session = Depends(get_db)
 ):
-    existing_user = db.query(User).filter(
-        (User.username == username) | (User.email == email)
-    ).first()
+    existing = db.query(User).filter(User.username == username).first()
 
-    if existing_user:
+    if existing:
         return templates.TemplateResponse(
             "register.html",
             {"request": request, "error": "User already exists"}
@@ -68,13 +48,7 @@ def register_user(
 
     user = User(
         username=username,
-        name=name,
-        email=email,
-        phone=phone,
-        address=address,
-        state=state,
-        pincode=pincode,
-        password=hash_password(password)
+        password=pwd_context.hash(password)
     )
 
     db.add(user)
@@ -82,53 +56,37 @@ def register_user(
 
     return RedirectResponse("/login", status_code=303)
 
-
-# -----------------------
-# LOGIN
-# -----------------------
+# ---------------- LOGIN PAGE ----------------
 @router.get("/login")
 def login_page(request: Request):
     return templates.TemplateResponse(
         "login.html",
-        {"request": request}
+        {"request": request, "error": None}
     )
 
-
+# ---------------- LOGIN ----------------
 @router.post("/login")
-def seller_login(
+def login(
     request: Request,
     username: str = Form(...),
     password: str = Form(...),
-    db: Session = Depends(fast_db)
+    db: Session = Depends(get_db)
 ):
+    user = db.query(User).filter(User.username == username).first()
 
-    seller = db.query(User).filter(
-        User.username == username
-    ).first()
-
-    if not seller:
-        raise HTTPException(
-            status_code=401,
-            detail="User not found"
+    if not user or not pwd_context.verify(password, user.password):
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "Invalid credentials"}
         )
 
-    if not pwd_context.verify(password, seller.password):
-        raise HTTPException(
-            status_code=401,
-            detail="Wrong password"
-        )
+    # SESSION STORE
+    request.session["user_id"] = user.id
+    request.session["username"] = user.username
 
-    # ✅ SESSION
-    request.session["user_id"] = seller.id
-    request.session["role"] = "seller"
+    return RedirectResponse("/", status_code=303)
 
-    return RedirectResponse(
-        url="/seller/profile",
-        status_code=303
-    )
-# -----------------------
-# LOGOUT
-# -----------------------
+# ---------------- LOGOUT ----------------
 @router.get("/logout")
 def logout(request: Request):
     request.session.clear()
