@@ -12,7 +12,7 @@ router = APIRouter()
 # Templates (IMPORTANT FIX)
 templates = Jinja2Templates(directory="templates")
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 # ---------------- DB ----------------
 def get_db():
